@@ -3,7 +3,7 @@
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
 // @version             0.0.1
 // @icon                https://www.bilibili.com/favicon.ico
-// @description         哔哩哔哩番剧解锁
+// @description         哔哩哔哩番剧解锁脚本
 // @author              https://github.com/vcheckzen
 // @supportURL          https://github.com/vcheckzen/UnblockBilibili/issues
 // @contributionURL     https://github.com/vcheckzen/UnblockBilibili
