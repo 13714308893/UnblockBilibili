@@ -10,4 +10,6 @@
 
 ## SESSDATA
 
-- 大会员登录 [哔哩哔哩](https://bilibili.com) 后，按 `F12` 进入 `控制台`，依次进入 `Application` - `Cookies` 可获得 `SESSDATA`
+- 大会员登录 [哔哩哔哩](https://bilibili.com) 后
+- 按 `F12` 进入 `控制台`
+- 依次进入 `Application` - `Cookies` 查看 `SESSDATA`
