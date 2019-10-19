@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.0.1
+// @version             0.0.2
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
@@ -9,41 +9,70 @@
 // @contributionURL     https://github.com/vcheckzen/UnblockBilibili
 // @include             https://www.bilibili.com/video/av*
 // @include             https://www.bilibili.com/bangumi/play/*
-// @run-at              document-end
+// @run-at              document-start
 // @grant               GM.cookie
 // ==/UserScript==
 
-(function () {
+(() => {
     'use strict';
-    const VIP_SESSDATA = '';
+    const VIP_COOKIES = '';
 
-    const setCookie = (name, value, expirationDate) => {
-        GM.cookie.set({ name: name, value: value, domain: '.bilibili.com', path: '/', expirationDate: expirationDate, httpOnly: true }, error => {
-            console.log(error || name + ' setted');
+    const formatCookies = () => {
+        let formatedCookies = {};
+        const cookies = VIP_COOKIES.split('; ');
+        cookies.forEach(cookie => {
+            const kv = cookie.split('=');
+            formatedCookies[kv[0]] = kv[1];
         });
+        return formatedCookies;
     };
 
-    const crack = () => {
-        if (location.href === window.lastep) {
-            return;
-        }
-        window.lastep = location.href;
-        GM.cookie.list({ name: 'SESSDATACOPY' }).then(cookies => {
-            if (cookies[0] && cookies[0].value) {
-                setCookie('SESSDATA', cookies[0].value, cookies[0].expirationDate);
-                setCookie('SESSDATACOPY');
-            } else {
-                GM.cookie.list({ name: 'SESSDATA' }).then(cookies => {
-                    if (cookies[0]) {
-                        setCookie('SESSDATACOPY', cookies[0].value, cookies[0].expirationDate);
-                        setCookie('SESSDATA', VIP_SESSDATA, cookies[0].expirationDate);
-                        location.reload();
+    const FORMATED_VIP_COOKIES = formatCookies();
+
+    const setCookie = (name, value, expirationDate) => {
+        GM.cookie.set({
+            name: name,
+            value: value,
+            domain: '.bilibili.com',
+            path: '/',
+            expirationDate: expirationDate,
+            httpOnly: true
+        }, null);
+    };
+
+    const changeCookies = () => {
+        for (const key in FORMATED_VIP_COOKIES) {
+            if (FORMATED_VIP_COOKIES.hasOwnProperty(key)) {
+                GM.cookie.list({ name: key }).then(cookies => {
+                    if (cookies[0].value != FORMATED_VIP_COOKIES[key]) {
+                        setCookie(key + 'COPY', cookies[0].value, cookies[0].expirationDate);
+                        setCookie(key, FORMATED_VIP_COOKIES[key], cookies[0].expirationDate);
                     }
                 });
             }
-        });
-    }
+        }
+    };
 
-    window.lastep;
-    setInterval(() => crack(), 2000);
+    const recoverCookies = () => {
+        for (const key in FORMATED_VIP_COOKIES) {
+            if (FORMATED_VIP_COOKIES.hasOwnProperty(key)) {
+                GM.cookie.list({ name: key + 'COPY' }).then(cookies => {
+                    if (cookies[0].value != '') {
+                        setCookie(key, cookies[0].value, cookies[0].expirationDate);
+                        setCookie(key + 'COPY');
+                    }
+                });
+            }
+        }
+    };
+
+    changeCookies();
+    setTimeout(() => recoverCookies(), 2000);
+    window.lastep = location.href;
+    setInterval(() => {
+        if (window.lastep != location.href) {
+            changeCookies();
+            setTimeout(() => location.reload(), 2000);
+        }
+    }, 1000);
 })();
