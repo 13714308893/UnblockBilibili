@@ -77,9 +77,9 @@
             setInterval(() => {
                 if (window.lastep != location.href) {
                     changeCookies();
-                    setTimeout(() => location.reload(), 500);
+                    setTimeout(() => location.reload(), 1000);
                 }
-            }, 500);
+            }, 1000);
         }
-    }, 500);
+    }, 1000);
 })();
