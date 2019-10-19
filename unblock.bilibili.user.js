@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.0.2
+// @version             0.0.3
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
@@ -66,13 +66,20 @@
         }
     };
 
+
     changeCookies();
-    setTimeout(() => recoverCookies(), 2000);
-    window.lastep = location.href;
-    setInterval(() => {
-        if (window.lastep != location.href) {
-            changeCookies();
-            setTimeout(() => location.reload(), 2000);
+    setTimeout(() => {
+        if (document.referrer.indexOf('/video/av') < 0 && document.referrer.indexOf('/bangumi/play/') < 0) {
+            location.reload();
+        } else {
+            recoverCookies();
+            window.lastep = location.href;
+            setInterval(() => {
+                if (window.lastep != location.href) {
+                    changeCookies();
+                    setTimeout(() => location.reload(), 500);
+                }
+            }, 500);
         }
-    }, 1000);
+    }, 500);
 })();
