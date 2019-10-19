@@ -16,4 +16,4 @@
 - 打开 [任一会员番剧](https://www.bilibili.com/bangumi/play/ep267685/)
 - 在控制台 `Filter` 中输入 `play/ep` 后回车搜索
 - 点击 `番剧页` 对应请求，查看 `Request Headers`
-- 其中 `Cookie` 值，即为所需的 `VIP_COOKIES`
+- 其中，`Cookie` 值即为所需的 `VIP_COOKIES`
