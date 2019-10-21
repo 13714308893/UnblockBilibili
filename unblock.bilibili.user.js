@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.0.4
+// @version             0.0.5
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
@@ -9,7 +9,7 @@
 // @contributionURL     https://github.com/vcheckzen/UnblockBilibili
 // @include             https://www.bilibili.com/video/av*
 // @include             https://www.bilibili.com/bangumi/play/*
-// @run-at              document-start
+// @run-at              document-end
 // @grant               GM.cookie
 // ==/UserScript==
 
@@ -29,14 +29,14 @@
 
     const FORMATED_VIP_COOKIES = formatCookies();
 
-    const setCookie = (name, value, expirationDate) => {
+    const setCookie = (name, value, domain, path, expirationDate, httpOnly) => {
         GM.cookie.set({
             name: name,
             value: value,
-            domain: '.bilibili.com',
-            path: '/',
+            domain: domain,
+            path: path,
             expirationDate: expirationDate,
-            httpOnly: true
+            httpOnly: httpOnly
         }, null);
     };
 
@@ -45,8 +45,8 @@
             if (FORMATED_VIP_COOKIES.hasOwnProperty(key)) {
                 GM.cookie.list({ name: key }).then(cookies => {
                     if (cookies[0].value != FORMATED_VIP_COOKIES[key]) {
-                        setCookie(key + 'COPY', cookies[0].value, cookies[0].expirationDate);
-                        setCookie(key, FORMATED_VIP_COOKIES[key], cookies[0].expirationDate);
+                        setCookie('COPY_' + key + '_COPY', cookies[0].value, cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly);
+                        setCookie(key, FORMATED_VIP_COOKIES[key], cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly);
                     }
                 });
             }
@@ -56,10 +56,10 @@
     const recoverCookies = () => {
         for (const key in FORMATED_VIP_COOKIES) {
             if (FORMATED_VIP_COOKIES.hasOwnProperty(key)) {
-                GM.cookie.list({ name: key + 'COPY' }).then(cookies => {
+                GM.cookie.list({ name: 'COPY_' + key + '_COPY' }).then(cookies => {
                     if (cookies[0].value != '') {
-                        setCookie(key, cookies[0].value, cookies[0].expirationDate);
-                        setCookie(key + 'COPY');
+                        setCookie(key, cookies[0].value, cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly);
+                        GM.cookie.delete({ name: 'COPY_' + key + '_COPY' }, null);
                     }
                 });
             }
