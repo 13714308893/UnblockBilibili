@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.0.5
+// @version             0.0.6
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
@@ -28,8 +28,9 @@
     };
 
     const FORMATED_VIP_COOKIES = formatCookies();
+    let countOfCookies = Object.getOwnPropertyNames(FORMATED_VIP_COOKIES).length;
 
-    const setCookie = (name, value, domain, path, expirationDate, httpOnly) => {
+    const setCookie = (name, value, domain, path, expirationDate, httpOnly, callback) => {
         GM.cookie.set({
             name: name,
             value: value,
@@ -37,49 +38,55 @@
             path: path,
             expirationDate: expirationDate,
             httpOnly: httpOnly
-        }, null);
+        }).then(() => {
+            if (name.indexOf('COPY_') < 0) {
+                if (--countOfCookies <= 0) {
+                    if (typeof callback === 'function') {
+                        callback();
+                    }
+                }
+            }
+        });
     };
 
-    const changeCookies = () => {
+    const changeCookies = callback => {
         for (const key in FORMATED_VIP_COOKIES) {
             if (FORMATED_VIP_COOKIES.hasOwnProperty(key)) {
                 GM.cookie.list({ name: key }).then(cookies => {
                     if (cookies[0].value != FORMATED_VIP_COOKIES[key]) {
-                        setCookie('COPY_' + key + '_COPY', cookies[0].value, cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly);
-                        setCookie(key, FORMATED_VIP_COOKIES[key], cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly);
+                        setCookie('COPY_' + key + '_COPY', cookies[0].value, cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly, null);
+                        setCookie(key, FORMATED_VIP_COOKIES[key], cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly, callback);
                     }
                 });
             }
         }
     };
 
-    const recoverCookies = () => {
+    const recoverCookies = callback => {
         for (const key in FORMATED_VIP_COOKIES) {
             if (FORMATED_VIP_COOKIES.hasOwnProperty(key)) {
                 GM.cookie.list({ name: 'COPY_' + key + '_COPY' }).then(cookies => {
                     if (cookies[0].value != '') {
-                        setCookie(key, cookies[0].value, cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly);
-                        GM.cookie.delete({ name: 'COPY_' + key + '_COPY' }, null);
+                        setCookie(key, cookies[0].value, cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly, null);
+                        GM.cookie.delete({ name: 'COPY_' + key + '_COPY' }).then(() => callback());
                     }
                 });
             }
         }
     };
 
-
-    changeCookies();
-    setTimeout(() => {
-        if (document.referrer.indexOf('/video/av') < 0 && document.referrer.indexOf('/bangumi/play/') < 0) {
-            location.reload();
-        } else {
-            recoverCookies();
+    if (document.referrer.indexOf('/video/av') < 0 && document.referrer.indexOf('/bangumi/play/') < 0 && document.cookie.indexOf('COPY_') < 0) {
+        changeCookies(() => location.reload());
+    } else {
+        recoverCookies(() => {
             window.lastep = location.href;
-            setInterval(() => {
+            const LISTEN_URL_CHANGE = setInterval(() => {
                 if (window.lastep != location.href) {
-                    changeCookies();
-                    setTimeout(() => location.reload(), 1000);
+                    clearInterval(LISTEN_URL_CHANGE);
+                    countOfCookies = Object.getOwnPropertyNames(FORMATED_VIP_COOKIES).length;
+                    changeCookies(() => location.reload());
                 }
-            }, 1000);
-        }
-    }, 1000);
+            }, 600);
+        });
+    }
 })();
