@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.0.6
+// @version             0.0.7
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
@@ -15,7 +15,7 @@
 
 (() => {
     'use strict';
-    const VIP_COOKIES = '';
+    const VIP_COOKIES = "";
 
     const formatCookies = () => {
         let formatedCookies = {};
@@ -53,7 +53,7 @@
         for (const key in FORMATED_VIP_COOKIES) {
             if (FORMATED_VIP_COOKIES.hasOwnProperty(key)) {
                 GM.cookie.list({ name: key }).then(cookies => {
-                    if (cookies[0].value != FORMATED_VIP_COOKIES[key]) {
+                    if (cookies[0] && cookies[0].value != FORMATED_VIP_COOKIES[key]) {
                         setCookie('COPY_' + key + '_COPY', cookies[0].value, cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly, null);
                         setCookie(key, FORMATED_VIP_COOKIES[key], cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly, callback);
                     }
@@ -66,7 +66,7 @@
         for (const key in FORMATED_VIP_COOKIES) {
             if (FORMATED_VIP_COOKIES.hasOwnProperty(key)) {
                 GM.cookie.list({ name: 'COPY_' + key + '_COPY' }).then(cookies => {
-                    if (cookies[0].value != '') {
+                    if (cookies[0] && cookies[0].value != '') {
                         setCookie(key, cookies[0].value, cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly, null);
                         GM.cookie.delete({ name: 'COPY_' + key + '_COPY' }).then(() => callback());
                     }
