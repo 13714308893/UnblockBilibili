@@ -1,18 +1,16 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.0.8
+// @version             0.0.9
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
 // @supportURL          https://github.com/vcheckzen/UnblockBilibili/issues
 // @contributionURL     https://github.com/vcheckzen/UnblockBilibili
-// @include             https://www.bilibili.com/video/av*
-// @include             https://www.bilibili.com/bangumi/play/*
+// @match               *://*.bilibili.com/video/av*
+// @match               *://*.bilibili.com/bangumi/play/*
 // @run-at              document-end
 // @grant               GM.cookie
-// @grant               GM_cookie
-// @grant               unsafeWindow
 // ==/UserScript==
 
 (() => {
@@ -38,8 +36,8 @@
     const FORMATED_VIP_COOKIES = formatCookies();
     let countOfCookies = Object.getOwnPropertyNames(FORMATED_VIP_COOKIES).length;
     if (countOfCookies !== VIP_COOKIES_KEYS.length) {
-        if (confirm("哔哩哔哩番剧解锁：大会员 Cookie 不正确，脚本无法正常运行。是否查看详细使用说明？")) {
-            window.open("https://logi.ml/script/unblocking-bilibili-without-perception.html");
+        if (confirm('哔哩哔哩番剧解锁：大会员 Cookie 不正确，脚本无法正常运行。是否查看详细使用说明？')) {
+            location.href = 'https://logi.ml/script/unblocking-bilibili-without-perception.html';
         }
         return;
     }
