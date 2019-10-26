@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.0.7
+// @version             0.0.8
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
@@ -11,24 +11,38 @@
 // @include             https://www.bilibili.com/bangumi/play/*
 // @run-at              document-end
 // @grant               GM.cookie
+// @grant               GM_cookie
+// @grant               unsafeWindow
 // ==/UserScript==
 
 (() => {
     'use strict';
     const VIP_COOKIES = "";
 
+    const VIP_COOKIES_KEYS = [
+        'DedeUserID', 'DedeUserID__ckMd5', '_uuid', 'buvid3', 'bili_jct', 'SESSDATA', 'LIVE_BUVID', 'sid'
+    ];
+
     const formatCookies = () => {
         let formatedCookies = {};
         const cookies = VIP_COOKIES.split('; ');
         cookies.forEach(cookie => {
             const kv = cookie.split('=');
-            formatedCookies[kv[0]] = kv[1];
+            if (VIP_COOKIES_KEYS.indexOf(kv[0]) >= 0) {
+                formatedCookies[kv[0]] = kv[1];
+            }
         });
         return formatedCookies;
     };
 
     const FORMATED_VIP_COOKIES = formatCookies();
     let countOfCookies = Object.getOwnPropertyNames(FORMATED_VIP_COOKIES).length;
+    if (countOfCookies !== VIP_COOKIES_KEYS.length) {
+        if (confirm("哔哩哔哩番剧解锁：大会员 Cookie 不正确，脚本无法正常运行。是否查看详细使用说明？")) {
+            window.open("https://logi.ml/script/unblocking-bilibili-without-perception.html");
+        }
+        return;
+    }
 
     const setCookie = (name, value, domain, path, expirationDate, httpOnly, callback) => {
         GM.cookie.set({
