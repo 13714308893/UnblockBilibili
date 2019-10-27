@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.0.9
+// @version             0.1.0
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
 // @supportURL          https://github.com/vcheckzen/UnblockBilibili/issues
 // @contributionURL     https://github.com/vcheckzen/UnblockBilibili
-// @match               *://*.bilibili.com/video/av*
-// @match               *://*.bilibili.com/bangumi/play/*
+// @match               *.bilibili.com/video/av*
+// @match               *.bilibili.com/bangumi/play/*
 // @run-at              document-end
 // @grant               GM.cookie
 // ==/UserScript==
@@ -34,7 +34,9 @@
     };
 
     const FORMATED_VIP_COOKIES = formatCookies();
-    let countOfCookies = Object.getOwnPropertyNames(FORMATED_VIP_COOKIES).length;
+    const COOKIE_COUNT = Object.getOwnPropertyNames(FORMATED_VIP_COOKIES).length;
+
+    let countOfCookies = COOKIE_COUNT;
     if (countOfCookies !== VIP_COOKIES_KEYS.length) {
         if (confirm('哔哩哔哩番剧解锁：大会员 Cookie 不正确，脚本无法正常运行。是否查看详细使用说明？')) {
             location.href = 'https://logi.ml/script/unblocking-bilibili-without-perception.html';
@@ -51,54 +53,82 @@
             expirationDate: expirationDate,
             httpOnly: httpOnly
         }).then(() => {
-            if (name.indexOf('COPY_') < 0) {
-                if (--countOfCookies <= 0) {
-                    if (typeof callback === 'function') {
+            if (typeof callback === 'function') {
+                callback();
+            }
+        });
+    };
+
+    const replaceCookie = (key, cookie, callback) => {
+        if (cookie && cookie.value != FORMATED_VIP_COOKIES[key]) {
+            setCookie('COPY_' + key + '_COPY',
+                cookie.value,
+                cookie.domain,
+                cookie.path,
+                cookie.expirationDate,
+                cookie.httpOnly
+            );
+            setCookie(key,
+                FORMATED_VIP_COOKIES[key],
+                cookie.domain,
+                cookie.path,
+                cookie.expirationDate,
+                cookie.httpOnly,
+                () => {
+                    if (--countOfCookies <= 0) {
                         callback();
                     }
                 }
-            }
-        });
+            );
+        }
     };
 
     const changeCookies = callback => {
         for (const key in FORMATED_VIP_COOKIES) {
             if (FORMATED_VIP_COOKIES.hasOwnProperty(key)) {
-                GM.cookie.list({ name: key }).then(cookies => {
-                    if (cookies[0] && cookies[0].value != FORMATED_VIP_COOKIES[key]) {
-                        setCookie('COPY_' + key + '_COPY', cookies[0].value, cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly, null);
-                        setCookie(key, FORMATED_VIP_COOKIES[key], cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly, callback);
-                    }
-                });
+                GM.cookie.list({ name: key })
+                    .then(cookies => replaceCookie(key, cookies[0], callback));
             }
+        }
+    };
+
+    const replaceCookie2 = (key, cookie, callback) => {
+        if (cookie && cookie.value != '') {
+            setCookie(key,
+                cookie.value,
+                cookie.domain,
+                cookie.path,
+                cookie.expirationDate,
+                cookie.httpOnly
+            );
+            GM.cookie.delete({ name: 'COPY_' + key + '_COPY' }).then(() => callback());
         }
     };
 
     const recoverCookies = callback => {
         for (const key in FORMATED_VIP_COOKIES) {
             if (FORMATED_VIP_COOKIES.hasOwnProperty(key)) {
-                GM.cookie.list({ name: 'COPY_' + key + '_COPY' }).then(cookies => {
-                    if (cookies[0] && cookies[0].value != '') {
-                        setCookie(key, cookies[0].value, cookies[0].domain, cookies[0].path, cookies[0].expirationDate, cookies[0].httpOnly, null);
-                        GM.cookie.delete({ name: 'COPY_' + key + '_COPY' }).then(() => callback());
-                    }
-                });
+                GM.cookie.list({ name: 'COPY_' + key + '_COPY' })
+                    .then(cookies => replaceCookie2(key, cookies[0], callback));
             }
         }
     };
 
-    if (document.referrer.indexOf('/video/av') < 0 && document.referrer.indexOf('/bangumi/play/') < 0 && document.cookie.indexOf('COPY_') < 0) {
+    const referrer = document.referrer;
+    if (referrer.indexOf('/video/av') < 0
+        && referrer.indexOf('/bangumi/play/') < 0
+        && document.cookie.indexOf('COPY_') < 0) {
         changeCookies(() => location.reload());
     } else {
-        recoverCookies(() => {
+        setTimeout(() => recoverCookies(() => {
             window.lastep = location.href;
             const LISTEN_URL_CHANGE = setInterval(() => {
                 if (window.lastep != location.href) {
                     clearInterval(LISTEN_URL_CHANGE);
-                    countOfCookies = Object.getOwnPropertyNames(FORMATED_VIP_COOKIES).length;
+                    countOfCookies = COOKIE_COUNT;
                     changeCookies(() => location.reload());
                 }
             }, 600);
-        });
+        }), 10);
     }
 })();
