@@ -1,28 +1,27 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.1.1
+// @version             0.1.2
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
 // @supportURL          https://github.com/vcheckzen/UnblockBilibili/issues
 // @contributionURL     https://github.com/vcheckzen/UnblockBilibili
 // @match               *.bilibili.com/video/av*
-// @match               *.bilibili.com/bangumi/play/*
+// @match               *.bilibili.com/bangumi/play*
 // @run-at              document-end
 // @grant               GM.cookie
 // ==/UserScript==
 
 (() => {
     'use strict';
-    const VIP_COOKIES = "";
+    let VIP_COOKIES = "";
 
-    const VIP_COOKIES_KEYS = [
-        'SESSDATA', 'DedeUserID', 'DedeUserID__ckMd5', '_uuid', 'buvid3', 'bili_jct', 'LIVE_BUVID', 'sid'
-    ];
+    const VIP_COOKIES_KEYS = ['SESSDATA', 'DedeUserID', 'DedeUserID__ckMd5', '_uuid', 'buvid3', 'bili_jct', 'LIVE_BUVID', 'sid', 'CURRENT_QUALITY'];
 
     const formatCookies = () => {
         let formatedCookies = {};
+        VIP_COOKIES += '; CURRENT_QUALITY=112'
         const cookies = VIP_COOKIES.split('; ');
         cookies.forEach(cookie => {
             const kv = cookie.split('=');
@@ -135,11 +134,11 @@
     const referrer = document.referrer;
     const initial = () => deleteExtraCookies(() => changeCookies(() => location.reload()));
     if (referrer.indexOf('/video/av') < 0
-        && referrer.indexOf('/bangumi/play/') < 0
+        && referrer.indexOf('/bangumi/play') < 0
         && document.cookie.indexOf('COPY_') < 0) {
         initial();
-    } else if (location.href.indexOf('/bangumi/play/' > 0)
-        && (referrer.indexOf('/video/av') > 0 || referrer == location.href)
+    } else if ((location.href.indexOf('/bangumi/play' > 0) || location.href.indexOf('/video/av' > 0))
+        && (referrer.indexOf('/video/av') > 0 || referrer == location.href || referrer == '')
         && document.cookie.indexOf('COPY_') < 0) {
         initial();
     } else {
@@ -150,7 +149,7 @@
                     if (window.lastep != location.href) {
                         window.lastep = location.href;
                         countOfCookies = COOKIE_COUNT;
-                        changeCookies(() => location.reload());
+                        initial();
                     }
                 }, 1000);
             });
