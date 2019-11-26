@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.1.2
+// @version             0.1.3
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
@@ -15,6 +15,8 @@
 
 (() => {
     'use strict';
+    // 目前看视频会自动切换到会员账号，其他页面会切回来，暂时没有精力实现精细的登录控制。
+    // 下行双引号里面填写大会员 Cookie。复制得到的 Cookie，不要做任何修改，直接粘贴保存。
     let VIP_COOKIES = "";
 
     const VIP_COOKIES_KEYS = ['SESSDATA', 'DedeUserID', 'DedeUserID__ckMd5', '_uuid', 'buvid3', 'bili_jct', 'LIVE_BUVID', 'sid', 'CURRENT_QUALITY'];
@@ -153,6 +155,6 @@
                     }
                 }, 1000);
             });
-        }, 1);
+        }, 2000);
     }
 })();
