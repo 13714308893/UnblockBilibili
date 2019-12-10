@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.1.3
+// @version             0.1.4
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
@@ -20,10 +20,9 @@
     let VIP_COOKIES = "";
 
     const VIP_COOKIES_KEYS = ['SESSDATA', 'DedeUserID', 'DedeUserID__ckMd5', '_uuid', 'buvid3', 'bili_jct', 'LIVE_BUVID', 'sid', 'CURRENT_QUALITY'];
-
-    const formatCookies = () => {
-        let formatedCookies = {};
-        VIP_COOKIES += '; CURRENT_QUALITY=112'
+    const FORMATED_VIP_COOKIES = (() => {
+        const formatedCookies = {};
+        VIP_COOKIES += '; CURRENT_QUALITY=116';
         const cookies = VIP_COOKIES.split('; ');
         cookies.forEach(cookie => {
             const kv = cookie.split('=');
@@ -32,9 +31,7 @@
             }
         });
         return formatedCookies;
-    };
-
-    const FORMATED_VIP_COOKIES = formatCookies();
+    })();
     const COOKIE_COUNT = Object.getOwnPropertyNames(FORMATED_VIP_COOKIES).length;
 
     let countOfCookies = COOKIE_COUNT;
@@ -53,16 +50,12 @@
             path: path,
             expirationDate: expirationDate,
             httpOnly: httpOnly
-        }).then(() => {
-            if (typeof callback === 'function') {
-                callback();
-            }
-        });
+        }).then(() => typeof callback === 'function' ? callback() : null);
     };
 
     const changeCookies = (callback) => {
         const realChange = (key, cookie) => {
-            if (cookie && cookie.value != FORMATED_VIP_COOKIES[key]) {
+            if (cookie && cookie.value !== FORMATED_VIP_COOKIES[key]) {
                 setCookie('COPY_' + key + '_COPY',
                     cookie.value,
                     cookie.domain,
@@ -76,11 +69,7 @@
                     cookie.path,
                     cookie.expirationDate,
                     cookie.httpOnly,
-                    () => {
-                        if (--countOfCookies <= 0) {
-                            callback();
-                        }
-                    }
+                    () => --countOfCookies <= 0 ? callback() : null
                 );
             }
         };
@@ -94,7 +83,7 @@
 
     const recoverCookies = (callback) => {
         const realRecover = (key, cookie) => {
-            if (cookie && cookie.value != '') {
+            if (cookie && cookie.value !== '') {
                 setCookie(key,
                     cookie.value,
                     cookie.domain,
@@ -114,13 +103,7 @@
     };
 
     const deleteExtraCookies = (callback) => {
-        const realDelete = (name, undeletedCookieCount) => {
-            GM.cookie.delete({ name: name }).then(() => {
-                if (undeletedCookieCount <= 0) {
-                    callback();
-                }
-            });
-        };
+        const realDelete = (name, undeletedCookieCount) => GM.cookie.delete({ name: name }).then(() => undeletedCookieCount <= 0 ? callback() : null);
         GM.cookie.list({}).then(cookies => {
             if (cookies.length > 0) {
                 let undeletedCookieCount = cookies.length - VIP_COOKIES_KEYS.length;
@@ -139,22 +122,20 @@
         && referrer.indexOf('/bangumi/play') < 0
         && document.cookie.indexOf('COPY_') < 0) {
         initial();
-    } else if ((location.href.indexOf('/bangumi/play' > 0) || location.href.indexOf('/video/av' > 0))
-        && (referrer.indexOf('/video/av') > 0 || referrer == location.href || referrer == '')
+    } else if ((location.href.indexOf('/bangumi/play' >= 0) || location.href.indexOf('/video/av' >= 0))
+        && (referrer.indexOf('/video/av') >= 0 || referrer === location.href || referrer === '')
         && document.cookie.indexOf('COPY_') < 0) {
         initial();
     } else {
-        setTimeout(() => {
-            recoverCookies(() => {
-                window.lastep = location.href;
-                setInterval(() => {
-                    if (window.lastep != location.href) {
-                        window.lastep = location.href;
-                        countOfCookies = COOKIE_COUNT;
-                        initial();
-                    }
-                }, 1000);
-            });
-        }, 2000);
+        setTimeout(() => recoverCookies(() => {
+            window.lastep = location.href;
+            setInterval(() => {
+                if (window.lastep !== location.href) {
+                    window.lastep = location.href;
+                    countOfCookies = COOKIE_COUNT;
+                    initial();
+                }
+            }, 1000);
+        }), 2000);
     }
 })();
