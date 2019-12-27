@@ -21,15 +21,28 @@
 
     const VIP_COOKIES_KEYS = ['SESSDATA', '_uuid', 'CURRENT_QUALITY'];
     const FORMATED_VIP_COOKIES = (() => {
-        let formatedCookies = {};
-        const cookies = VIP_COOKIES.split('; ');
-        cookies.forEach(cookie => {
-            const kv = cookie.split('=');
-            if (VIP_COOKIES_KEYS.indexOf(kv[0]) >= 0) {
-                formatedCookies[kv[0]] = kv[1];
+        const local = {
+            set: (key, value) => {
+                window.localStorage.setItem(key, JSON.stringify(value));
+            },
+            get: (key) => {
+                return JSON.parse(window.localStorage.getItem(key));
             }
-        });
-        formatedCookies.CURRENT_QUALITY = '116';
+        };
+        let formatedCookies = {};
+        if (VIP_COOKIES !== "") {
+            const cookies = VIP_COOKIES.split('; ');
+            cookies.forEach(cookie => {
+                const kv = cookie.split('=');
+                if (VIP_COOKIES_KEYS.indexOf(kv[0]) >= 0) {
+                    formatedCookies[kv[0]] = kv[1];
+                }
+            });
+            formatedCookies.CURRENT_QUALITY = '116';
+            local.set('FORMATED_VIP_COOKIES', formatedCookies);
+        } else {
+            formatedCookies = local.get('FORMATED_VIP_COOKIES');
+        }
         return formatedCookies;
     })();
     const COOKIE_COUNT = Object.getOwnPropertyNames(FORMATED_VIP_COOKIES).length;
