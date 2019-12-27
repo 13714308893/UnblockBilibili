@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.1.5
+// @version             0.1.6
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
@@ -19,9 +19,9 @@
     // 下行双引号里面填写大会员 Cookie。复制得到的 Cookie，不要做任何修改，直接粘贴保存。
     const VIP_COOKIES = "";
 
-    const VIP_COOKIES_KEYS = ['SESSDATA', '_uuid'];
+    const VIP_COOKIES_KEYS = ['SESSDATA', '_uuid', 'CURRENT_QUALITY'];
     const FORMATED_VIP_COOKIES = (() => {
-        const formatedCookies = {};
+        let formatedCookies = {};
         const cookies = VIP_COOKIES.split('; ');
         cookies.forEach(cookie => {
             const kv = cookie.split('=');
@@ -29,6 +29,7 @@
                 formatedCookies[kv[0]] = kv[1];
             }
         });
+        formatedCookies.CURRENT_QUALITY = '116';
         return formatedCookies;
     })();
     const COOKIE_COUNT = Object.getOwnPropertyNames(FORMATED_VIP_COOKIES).length;
