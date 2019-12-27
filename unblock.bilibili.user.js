@@ -19,7 +19,7 @@
     // 下行双引号里面填写大会员 Cookie。复制得到的 Cookie，不要做任何修改，直接粘贴保存。
     const VIP_COOKIES = "";
 
-    const VIP_COOKIES_KEYS = ['SESSDATA'];
+    const VIP_COOKIES_KEYS = ['SESSDATA', '_uuid'];
     const FORMATED_VIP_COOKIES = (() => {
         const formatedCookies = {};
         const cookies = VIP_COOKIES.split('; ');
