@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.1.7
+// @version             0.1.8
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
@@ -36,8 +36,8 @@
         }
     };
     const FORMATED_VIP_COOKIES = (() => {
+        let formatedCookies = {};
         if (ORIGINAL_VIP_COOKIES !== "") {
-            const formatedCookies = {};
             const cookies = ORIGINAL_VIP_COOKIES.split('; ');
             cookies.forEach(cookie => {
                 const kv = cookie.split('=');
@@ -49,8 +49,9 @@
             STORAGE_UTIL.localStorage.set('FORMATED_VIP_COOKIES', formatedCookies);
             return formatedCookies;
         } else {
-            return STORAGE_UTIL.localStorage.get('FORMATED_VIP_COOKIES');
+            formatedCookies = STORAGE_UTIL.localStorage.get('FORMATED_VIP_COOKIES') || formatedCookies;
         }
+        return formatedCookies;
     })();
 
     if (Object.getOwnPropertyNames(FORMATED_VIP_COOKIES).length !== NEEDED_VIP_COOKIES_KEYS.length) {
