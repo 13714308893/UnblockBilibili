@@ -56,7 +56,7 @@
 
     if (Object.getOwnPropertyNames(FORMATED_VIP_COOKIES).length !== NEEDED_VIP_COOKIES_KEYS.length) {
         if (confirm('哔哩哔哩番剧解锁：大会员 Cookie 不正确，脚本无法正常运行。是否查看详细使用说明？')) {
-            location.href = 'https://logi.ml/script/unblocking-bilibili-without-perception.html';
+            location.href = 'https://logi.im/script/unblocking-bilibili-without-perception.html';
         }
         return;
     }
