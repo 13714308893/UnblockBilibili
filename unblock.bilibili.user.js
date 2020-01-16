@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.1.8
+// @version             0.1.8.1
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
