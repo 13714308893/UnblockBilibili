@@ -1,13 +1,13 @@
 // ==UserScript==
-// @name                哔哩解析辅助
-// @namespace           https://github.com/vcheckzen/UnblockBilibiliAssistant
-// @version             0.0.1
+// @name                哔哩哔哩解析辅助
+// @namespace           https://github.com/vcheckzen/UnblockBilibili/blob/master/loliloli.user.js
+// @version             0.0.2
 // @icon                https://www.bilibili.com/favicon.ico
-// @description         为哔哩视频注入一键解析按钮
+// @description         为哔哩哔哩视频注入一键解析按钮
 // @author              https://github.com/vcheckzen
-// @supportURL          https://github.com/vcheckzen/UnblockBilibiliAssistant/issues
-// @contributionURL     https://github.com/vcheckzen/UnblockBilibiliAssistant
-//  @include            *2333.com*
+// @supportURL          https://github.com/vcheckzen/UnblockBilibili/issues
+// @contributionURL     https://github.com/vcheckzen/UnblockBilibili
+// @include             *2333.com*
 // @match               *.bilibili.com/video/av*
 // @match               *.bilibili.com/bangumi/play*
 // @run-at              document-end
@@ -50,12 +50,12 @@
         window.open(analysisServer);
     };
 
-    const waitElement = function (selector, callback, interval, timeout) {
+    const waitElement = function (selector, callback, fail, interval, timeout) {
         interval = interval || 100;
-        timeout = timeout || 10000;
-        var flag = true;
-        var elem = null;
-        var waiterId = Date.now();
+        timeout = timeout || 8000;
+        let flag = true;
+        let elem = null;
+        const waiterId = Date.now();
         elemWaitor[waiterId] = setInterval(() => {
             elem = document.querySelector(selector);
             if (flag && elem) {
@@ -66,23 +66,53 @@
                 clearInterval(elemWaitor[waiterId]);
             }
         }, interval);
-        setTimeout(() => clearInterval(elemWaitor[waiterId]), timeout);
+        setTimeout(() => {
+            if (typeof fail === 'function') {
+                fail();
+            }
+            clearInterval(elemWaitor[waiterId]);
+        }, timeout);
     };
 
     const registerAnalysisButton = function registerAnalysisButton() {
-        const hintText = '一键解析';
+        const hintText = '解析';
         waitElement('.twp-btn.right.vip', elem => {
             elem.innerHTML = hintText;
             elem.addEventListener('click', redirectToAnalysisServer);
         });
-        waitElement('.bilibili-player-video-top-follow.bilibili-player-show', elem => {
-            if (!document.querySelector('#btn-anls')) {
-                elem.parentElement.insertBefore(document.createRange().createContextualFragment(
-                    `<div id="btn-anls" class="${elem.className}"><span style="margin: 0 1em;">${hintText}</span></div>`
-                ).firstElementChild, elem);
-                document.querySelector('#btn-anls').addEventListener('click', redirectToAnalysisServer);
-            }
-        }, 100);
+        if (!document.head.querySelector('#style-loliloli')) {
+            document.head.append(document.createRange().createContextualFragment(
+                `<style id="style-loliloli">
+                    @keyframes fade-in {
+                        0% { background: rgba(33, 33, 33, 0); }
+                        30% { background: rgba(33, 33, 33, 0); }
+                        40% { background: rgba(33, 33, 33, 0.9); }
+                        100% { background: rgba(33, 33, 33, 1); }
+                    }
+                    .btn-anls {
+                        display: flex;
+                        flex: none;
+                        min-width: 64px;
+                        margin: 18px -16px 0 0;
+                        line-height: 24px;
+                        border-radius: 12px;
+                        pointer-events: all;
+                        text-align: center;
+                        z-index: 2;
+                        cursor: pointer;
+                        background: rgba(33, 33, 33, .9);
+                        animation :fade-in 10s;
+                    }
+                </style>`
+            ).firstElementChild);
+        }
+        waitElement('.bilibili-player-video-top-issue', elem => {
+            if (document.querySelector('.btn-anls')) return;
+            elem.parentElement.insertBefore(document.createRange().createContextualFragment(
+                `<div class="btn-anls"><span style="margin: 0 2em;">${hintText}</span></div>`
+            ).firstElementChild, elem);
+            document.querySelector('.btn-anls').addEventListener('click', redirectToAnalysisServer);
+        });
 
         rightLists.forEach(selector => {
             const el = document.querySelector(selector);
