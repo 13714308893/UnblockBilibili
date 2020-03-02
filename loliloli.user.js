@@ -41,7 +41,11 @@
         if (/.+(ep|av)\d+.+/.test(location.href)) {
             analysisServer += location.href.split('?')[0]
         } else if (/.+ss\d+.+/.test(location.href)) {
-            analysisServer += 'https://www.bilibili.com/bangumi/play/ep' + __PGC_USERSTATE__.progress.last_ep_id;
+            let id = __INITIAL_STATE__.epInfo.id
+            if (__PGC_USERSTATE__.hasOwnProperty('progress')) {
+                id = __PGC_USERSTATE__.progress.last_ep_id;
+            }
+            analysisServer += 'https://www.bilibili.com/bangumi/play/ep' + id;
         }
         window.open(analysisServer);
     };
