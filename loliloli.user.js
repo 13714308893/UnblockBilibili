@@ -7,7 +7,7 @@
 // @author              https://github.com/vcheckzen
 // @supportURL          https://github.com/vcheckzen/UnblockBilibiliAssistant/issues
 // @contributionURL     https://github.com/vcheckzen/UnblockBilibiliAssistant
-// @match               *.2333.com*
+//  @include            *2333.com*
 // @match               *.bilibili.com/video/av*
 // @match               *.bilibili.com/bangumi/play*
 // @run-at              document-end
@@ -15,6 +15,15 @@
 
 (() => {
     'use strict';
+
+    if (location.host === '2333.com' && box) {
+        const from = new URLSearchParams(location.search).get('from');
+        if (from && /.+(av|ep)\d+/.test(from) && localStorage.getItem('token')) {
+            box.originalUrl = from;
+        }
+        return;
+    }
+
     const elemWaitor = [];
     const rightLists = ['.r-con', '.plp-r'];
 
@@ -28,7 +37,7 @@
     };
 
     const redirectToAnalysisServer = function () {
-        let analysisServer = 'http://2333.com/?vid=';
+        let analysisServer = 'http://2333.com/?from=';
         if (/.+(ep|av)\d+.+/.test(location.href)) {
             analysisServer += location.href.split('?')[0]
         } else if (/.+ss\d+.+/.test(location.href)) {
@@ -80,8 +89,4 @@
     };
 
     registerAnalysisButton();
-
-    if (location.host === '2333.com' && box) {
-        box.originalUrl = location.search.split('=')[1]
-    }
 })();
