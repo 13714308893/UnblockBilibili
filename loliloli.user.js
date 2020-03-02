@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩解析辅助
 // @namespace           https://github.com/vcheckzen/UnblockBilibili/blob/master/loliloli.user.js
-// @version             0.0.2
+// @version             0.0.3
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         为哔哩哔哩视频注入一键解析按钮
 // @author              https://github.com/vcheckzen
@@ -86,10 +86,11 @@
             document.head.append(document.createRange().createContextualFragment(
                 `<style id="style-loliloli">
                     .btn-anls {
+                        pointer-events: all;
+                        z-index: 2;
                         margin: 18px -16px 0 0;
                         line-height: 24px;
                         border-radius: 12px;
-                        z-index: 2;
                         cursor: pointer;
                         background: rgba(33,33,33, .9);
                     }
