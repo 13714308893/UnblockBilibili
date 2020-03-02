@@ -77,31 +77,21 @@
     const registerAnalysisButton = function registerAnalysisButton() {
         const hintText = '解析';
         waitElement('.twp-btn.right.vip', elem => {
-            elem.innerHTML = hintText;
-            elem.addEventListener('click', redirectToAnalysisServer);
+            const cloneNode = elem.cloneNode(true);
+            cloneNode.innerHTML = '一键' + hintText;
+            cloneNode.onclick = redirectToAnalysisServer;
+            elem.parentElement.replaceChild(cloneNode, elem);
         });
         if (!document.head.querySelector('#style-loliloli')) {
             document.head.append(document.createRange().createContextualFragment(
                 `<style id="style-loliloli">
-                    @keyframes fade-in {
-                        0% { background: rgba(33, 33, 33, 0); }
-                        30% { background: rgba(33, 33, 33, 0); }
-                        40% { background: rgba(33, 33, 33, 0.9); }
-                        100% { background: rgba(33, 33, 33, 1); }
-                    }
                     .btn-anls {
-                        display: flex;
-                        flex: none;
-                        min-width: 64px;
                         margin: 18px -16px 0 0;
                         line-height: 24px;
                         border-radius: 12px;
-                        pointer-events: all;
-                        text-align: center;
                         z-index: 2;
                         cursor: pointer;
-                        background: rgba(33, 33, 33, .9);
-                        animation :fade-in 10s;
+                        background: rgba(33,33,33, .9);
                     }
                 </style>`
             ).firstElementChild);
