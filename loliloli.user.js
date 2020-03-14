@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩解析辅助
 // @namespace           https://github.com/vcheckzen/UnblockBilibili/blob/master/loliloli.user.js
-// @version             0.0.4
+// @version             0.0.5
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         为哔哩哔哩视频注入一键解析按钮
 // @author              https://github.com/vcheckzen
@@ -16,7 +16,9 @@
 (() => {
     'use strict';
 
-    if (location.host === '2333.com:2333' && box) {
+    const LOLILOLI_PORT = 2333;
+
+    if (location.host === `2333.com:${LOLILOLI_PORT}` && box) {
         const from = new URLSearchParams(location.search).get('from');
         if (from && /.+(av|ep)\d+/.test(from) && localStorage.getItem('token')) {
             box.originalUrl = from;
@@ -37,7 +39,7 @@
     };
 
     const redirectToAnalysisServer = function () {
-        let analysisServer = 'http://2333.com:2333/?from=';
+        let analysisServer = `http://2333.com:${LOLILOLI_PORT}/?from=`;
         if (/.+(ep|av)\d+.+/.test(location.href)) {
             analysisServer += location.href.split('?')[0]
         } else if (/.+ss\d+.+/.test(location.href)) {
@@ -76,11 +78,6 @@
 
     const registerAnalysisButton = function registerAnalysisButton() {
         const hintText = '解析';
-        //        waitElement('.app-only .sm a', elem => {
-        //           elem.href = '#';
-        //           elem.innerHTML = '一键' + hintText;
-        //            elem.onclick = redirectToAnalysisServer;
-        //        });
         waitElement('.twp-btn.right.vip', elem => {
             const cloneNode = elem.cloneNode(true);
             cloneNode.innerHTML = '一键' + hintText;
