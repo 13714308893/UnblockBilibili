@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩解析辅助
 // @namespace           https://github.com/vcheckzen/UnblockBilibili/blob/master/loliloli.user.js
-// @version             0.0.5
+// @version             0.0.6
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         为哔哩哔哩视频注入一键解析按钮
 // @author              https://github.com/vcheckzen
@@ -30,11 +30,19 @@
     const rightLists = ['.r-con', '.plp-r'];
 
     const payVideo = function () {
-        if (typeof __PGC_USERSTATE__ !== 'undefined'
-            && __PGC_USERSTATE__.hasOwnProperty('dialog')
-            && __PGC_USERSTATE__.dialog.hasOwnProperty('btn_left')) {
-            return true;
+        if (typeof __INITIAL_STATE__ !== 'undefined' &&
+            __INITIAL_STATE__.mediaInfo.payMent.vipDiscount !== 1) {
+            if (__INITIAL_STATE__.mediaInfo.payMent.price !== "0.0" ||
+                __INITIAL_STATE__.epInfo.badgeType !== 0
+            ) {
+                return true;
+            }
         }
+        // if (typeof __PGC_USERSTATE__ !== 'undefined'
+        //     && __PGC_USERSTATE__.hasOwnProperty('dialog')
+        //     && __PGC_USERSTATE__.dialog.hasOwnProperty('btn_left')) {
+        //     return true;
+        // }
         return false;
     };
 
