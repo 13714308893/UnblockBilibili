@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.1.8.1
+// @version             0.1.8.2
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
@@ -19,7 +19,7 @@
     // 下行双引号里面填写大会员 Cookie。复制得到的 Cookie，不要做任何修改，直接粘贴保存。
     const ORIGINAL_VIP_COOKIES = "";
 
-    const NEEDED_VIP_COOKIES_KEYS = ['SESSDATA', '_uuid', 'CURRENT_QUALITY'];
+    const NEEDED_VIP_COOKIES_KEYS = ['bili_jct', 'DedeUserID', 'DedeUserID__ckMd5', 'sid', 'SESSDATA', 'CURRENT_QUALITY'];
     const STORAGE_UTIL = {
         cookie: {
             set: (cookie, callback) => {
@@ -35,6 +35,12 @@
             delete: key => window.localStorage.removeItem(key)
         }
     };
+    const OPERATION_UTIL = {
+        isLocked: () => STORAGE_UTIL.localStorage.get('OPRATION_LOCK'),
+        lock: () => STORAGE_UTIL.localStorage.set('OPRATION_LOCK', true),
+        unlock: () => STORAGE_UTIL.localStorage.delete('OPRATION_LOCK')
+    };
+
     const FORMATED_VIP_COOKIES = (() => {
         let formatedCookies = {};
         if (ORIGINAL_VIP_COOKIES !== "") {
@@ -47,7 +53,6 @@
             });
             formatedCookies.CURRENT_QUALITY = '116';
             STORAGE_UTIL.localStorage.set('FORMATED_VIP_COOKIES', formatedCookies);
-            return formatedCookies;
         } else {
             formatedCookies = STORAGE_UTIL.localStorage.get('FORMATED_VIP_COOKIES') || formatedCookies;
         }
@@ -55,7 +60,7 @@
     })();
 
     if (Object.getOwnPropertyNames(FORMATED_VIP_COOKIES).length !== NEEDED_VIP_COOKIES_KEYS.length) {
-        if (confirm('哔哩哔哩番剧解锁：大会员 Cookie 不正确，脚本无法正常运行。是否查看详细使用说明？')) {
+        if (confirm('哔哩哔哩番剧解锁：大会员 Cookie 不正确，脚本无法正常运行，是否查看详细使用说明？')) {
             location.href = 'https://logi.im/script/unblocking-bilibili-without-perception.html';
         }
         return;
@@ -64,8 +69,8 @@
     const saveUserCookie = callback => STORAGE_UTIL.cookie.set({ "expirationDate": 9999999999, "domain": ".bilibili.com", "httpOnly": false, "name": "CURRENT_QUALITY", "path": "/", "value": "116" },
         () => STORAGE_UTIL.cookie.list({}, cookies => {
             STORAGE_UTIL.localStorage.set('USER_COOKIES', cookies);
-            let undeletedCookieCount = cookies.length;
-            cookies.forEach(cookie => STORAGE_UTIL.cookie.delete({ name: cookie.name }, () => { if (--undeletedCookieCount <= 0) { callback(); } }));
+            let countOfCookies = cookies.length;
+            cookies.forEach(cookie => STORAGE_UTIL.cookie.delete({ name: cookie.name }, () => { if (--countOfCookies <= 0) callback(); }));
         }));
 
     const setVipCookie = callback => {
@@ -85,29 +90,33 @@
 
     const recoverUserCookie = callback => {
         const userCookies = STORAGE_UTIL.localStorage.get('USER_COOKIES');
-        let userCookieCount = userCookies.length;
-        userCookies.forEach(cookie => STORAGE_UTIL.cookie.set(cookie, () => { if (--userCookieCount <= 0) { STORAGE_UTIL.localStorage.delete('USER_COOKIES'); callback(); } }));
+        let countOfCookies = userCookies.length;
+        userCookies.forEach(cookie => STORAGE_UTIL.cookie.set(cookie, () => { if (--countOfCookies <= 0) { STORAGE_UTIL.localStorage.delete('USER_COOKIES'); callback(); } }));
     };
 
     const referrer = document.referrer;
-    const sequence = () => saveUserCookie(() => setVipCookie(() => location.reload()));
-    if (referrer.indexOf('/video/av') < 0
-        && referrer.indexOf('/bangumi/play') < 0
-        && STORAGE_UTIL.localStorage.get('USER_COOKIES') === null) {
-        sequence();
-    } else if ((location.href.indexOf('/bangumi/play' >= 0) || location.href.indexOf('/video/av' >= 0))
-        && (referrer.indexOf('/video/av') >= 0 || referrer === location.href || referrer === '')
-        && STORAGE_UTIL.localStorage.get('USER_COOKIES') === null) {
+    const sequence = () => {
+        if (OPERATION_UTIL.isLocked()) return;
+        OPERATION_UTIL.lock();
+        saveUserCookie(() => setVipCookie(() => { OPERATION_UTIL.unlock(); location.reload(); }))
+    };
+    if (STORAGE_UTIL.localStorage.get('USER_COOKIES') === null
+        && (referrer.indexOf('/video/av') >= 0 || referrer === location.href ||
+            (referrer.indexOf('/video/av') < 0 && referrer.indexOf('/bangumi/play') < 0)
+        )
+    ) {
         sequence();
     } else {
-        setTimeout(() => recoverUserCookie(() => {
-            window.lastep = location.href;
-            setInterval(() => {
-                if (window.lastep !== location.href) {
-                    window.lastep = location.href;
-                    sequence();
-                }
-            }, 1000);
-        }), 2000);
+        if (OPERATION_UTIL.isLocked()) return;
+        OPERATION_UTIL.lock();
+        setTimeout(() => {
+            recoverUserCookie(() => {
+                ['.r-con', '.plp-r'].forEach(selector => {
+                    const el = document.querySelector(selector);
+                    if (el) el.addEventListener('click', sequence);
+                });
+                OPERATION_UTIL.unlock();
+            });
+        }, 300);
     }
 })();
