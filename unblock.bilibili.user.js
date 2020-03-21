@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.1.8.2
+// @version             0.1.9
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
@@ -17,7 +17,11 @@
     'use strict';
     // 目前看视频会自动切换到会员账号，其他页面会切回来，暂时没有精力实现精细的登录控制。
     // 下行双引号里面填写大会员 Cookie。复制得到的 Cookie，不要做任何修改，直接粘贴保存。
+    // 请务必清空哔哩哔哩 Cookie 和 localStorage 重新登录后再使用。
     const ORIGINAL_VIP_COOKIES = "";
+
+    // 下行双引号里的数字用于控制画质，从高到低依次为 116，112，80，64，32，16，自适应对应 0。
+    const CURRENT_QUALITY = "0";
 
     const NEEDED_VIP_COOKIES_KEYS = ['bili_jct', 'DedeUserID', 'DedeUserID__ckMd5', 'sid', 'SESSDATA', 'CURRENT_QUALITY'];
     const STORAGE_UTIL = {
@@ -51,11 +55,14 @@
                     formatedCookies[kv[0]] = kv[1];
                 }
             });
-            formatedCookies.CURRENT_QUALITY = '116';
-            STORAGE_UTIL.localStorage.set('FORMATED_VIP_COOKIES', formatedCookies);
         } else {
             formatedCookies = STORAGE_UTIL.localStorage.get('FORMATED_VIP_COOKIES') || formatedCookies;
         }
+        formatedCookies.CURRENT_QUALITY = CURRENT_QUALITY;
+        const player_settings = STORAGE_UTIL.localStorage.get('bilibili_player_settings') || { setting_config: {} };
+        player_settings.setting_config.defquality = parseInt(CURRENT_QUALITY);
+        STORAGE_UTIL.localStorage.set('FORMATED_VIP_COOKIES', formatedCookies);
+        STORAGE_UTIL.localStorage.set('bilibili_player_settings', player_settings);
         return formatedCookies;
     })();
 
@@ -66,12 +73,14 @@
         return;
     }
 
-    const saveUserCookie = callback => STORAGE_UTIL.cookie.set({ "expirationDate": 9999999999, "domain": ".bilibili.com", "httpOnly": false, "name": "CURRENT_QUALITY", "path": "/", "value": "116" },
-        () => STORAGE_UTIL.cookie.list({}, cookies => {
-            STORAGE_UTIL.localStorage.set('USER_COOKIES', cookies);
-            let countOfCookies = cookies.length;
-            cookies.forEach(cookie => STORAGE_UTIL.cookie.delete({ name: cookie.name }, () => { if (--countOfCookies <= 0) callback(); }));
-        }));
+    const saveUserCookie = callback => STORAGE_UTIL.cookie.list({}, cookies => {
+        STORAGE_UTIL.localStorage.set('USER_COOKIES', cookies);
+        if (Object.keys(cookies).indexOf('CURRENT_QUALITY') < 0) {
+            cookies.push({ "name": "CURRENT_QUALITY", "domain": ".bilibili.com", "path": "/", "value": CURRENT_QUALITY });
+        }
+        let countOfCookies = cookies.length;
+        cookies.forEach(cookie => STORAGE_UTIL.cookie.delete({ name: cookie.name }, () => { if (--countOfCookies <= 0) callback(); }));
+    });
 
     const setVipCookie = callback => {
         const userCookies = STORAGE_UTIL.localStorage.get('USER_COOKIES');
