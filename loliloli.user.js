@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩解析辅助
 // @namespace           https://github.com/vcheckzen/UnblockBilibili/blob/master/loliloli.user.js
-// @version             0.0.6.1
+// @version             0.0.6.2
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         为哔哩哔哩视频注入一键解析按钮
 // @author              https://github.com/vcheckzen
@@ -21,6 +21,10 @@
     if (location.host === `2333.com:${LOLILOLI_PORT}` && box) {
         const from = new URLSearchParams(location.search).get('from');
         if (from && /.+(av|ep)\d+/.test(from) && localStorage.getItem('token')) {
+            if (!localStorage.getItem('default_player')) {
+                localStorage.setItem('default_player', 'dplayer');
+                localStorage.setItem('PLAYER', 'dplayer');
+            }
             box.originalUrl = from;
         }
         return;
