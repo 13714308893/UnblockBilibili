@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.1.9
+// @version             0.1.9.1
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
@@ -74,10 +74,10 @@
     }
 
     const saveUserCookie = callback => STORAGE_UTIL.cookie.list({}, cookies => {
-        STORAGE_UTIL.localStorage.set('USER_COOKIES', cookies);
         if (Object.keys(cookies).indexOf('CURRENT_QUALITY') < 0) {
             cookies.push({ "name": "CURRENT_QUALITY", "domain": ".bilibili.com", "path": "/", "value": CURRENT_QUALITY });
         }
+        STORAGE_UTIL.localStorage.set('USER_COOKIES', cookies);
         let countOfCookies = cookies.length;
         cookies.forEach(cookie => STORAGE_UTIL.cookie.delete({ name: cookie.name }, () => { if (--countOfCookies <= 0) callback(); }));
     });
