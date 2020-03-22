@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                哔哩哔哩解析辅助
 // @namespace           https://github.com/vcheckzen/UnblockBilibili/blob/master/loliloli.user.js
-// @version             0.0.6.2
+// @version             0.0.6.3
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         为哔哩哔哩视频注入一键解析按钮
 // @author              https://github.com/vcheckzen
@@ -19,13 +19,14 @@
     const LOLILOLI_PORT = 2333;
 
     if (location.host === `2333.com:${LOLILOLI_PORT}` && box) {
-        const from = new URLSearchParams(location.search).get('from');
+        const sp = new URLSearchParams(location.search);
+        const from = sp.get('from'), p = sp.get('p');
         if (from && /.+(av|ep)\d+/.test(from) && localStorage.getItem('token')) {
             if (!localStorage.getItem('default_player')) {
                 localStorage.setItem('default_player', 'dplayer');
                 localStorage.setItem('PLAYER', 'dplayer');
             }
-            box.originalUrl = from;
+            box.originalUrl = from + (p ? '?p=' + p : '');
         }
         return;
     }
@@ -51,7 +52,8 @@
     const redirectToAnalysisServer = function () {
         let analysisServer = `http://2333.com:${LOLILOLI_PORT}/?from=`;
         if (/.+(ep|av)\d+.+/.test(location.href)) {
-            analysisServer += location.href.split('?')[0]
+            const p = new URLSearchParams(location.search).get('p');
+            analysisServer += location.href.split('?')[0] + (p ? '&p=' + p : '');
         } else if (/.+ss\d+.+/.test(location.href)) {
             let id = __INITIAL_STATE__.epInfo.id
             if (__PGC_USERSTATE__.hasOwnProperty('progress')) {
