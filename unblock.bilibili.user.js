@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name                哔哩哔哩番剧解锁
 // @namespace           https://github.com/vcheckzen/UnblockBilibili
-// @version             0.1.9.2
+// @version             0.1.9.3
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         大会员账号共享解锁脚本
 // @author              https://github.com/vcheckzen
 // @supportURL          https://github.com/vcheckzen/UnblockBilibili/issues
 // @contributionURL     https://github.com/vcheckzen/UnblockBilibili
-// @match               *.bilibili.com/video/av*
-// @match               *.bilibili.com/bangumi/play*
+// @include             *bilibili.com/bangumi/play*
+// @include             /.+bilibili.com/video/(av|bv1).+/
 // @run-at              document-end
 // @grant               GM.cookie
 // ==/UserScript==
@@ -21,7 +21,7 @@
     const ORIGINAL_VIP_COOKIES = "";
 
     // 下行双引号里的数字用于控制画质，从高到低依次为 116，112，80，64，32，16，自适应对应 0。
-    const CURRENT_QUALITY = "0";
+    const CURRENT_QUALITY = "116";
 
     const NEEDED_VIP_COOKIES_KEYS = ['bili_jct', 'DedeUserID', 'DedeUserID__ckMd5', 'sid', 'SESSDATA', 'CURRENT_QUALITY'];
     const STORAGE_UTIL = {
@@ -110,8 +110,8 @@
         saveUserCookie(() => setVipCookie(() => { OPERATION_UTIL.unlock(); location.reload(); }))
     };
     if (STORAGE_UTIL.localStorage.get('USER_COOKIES') === null
-        && (referrer.indexOf('/video/av') >= 0 || referrer === location.href ||
-            (referrer.indexOf('/video/av') < 0 && referrer.indexOf('/bangumi/play') < 0)
+        && (/.+video\/(av|bv1).+/i.test(referrer) || referrer === location.href ||
+            (!(/.+video\/(av|bv1).+/i.test(referrer)) && referrer.indexOf('/bangumi/play') < 0)
         )
     ) {
         sequence();
