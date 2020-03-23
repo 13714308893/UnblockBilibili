@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name                哔哩哔哩解析辅助
 // @namespace           https://github.com/vcheckzen/UnblockBilibili/blob/master/loliloli.user.js
-// @version             0.0.6.3
+// @version             0.0.6.4
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         为哔哩哔哩视频注入一键解析按钮
 // @author              https://github.com/vcheckzen
 // @supportURL          https://github.com/vcheckzen/UnblockBilibili/issues
 // @contributionURL     https://github.com/vcheckzen/UnblockBilibili
 // @include             *2333.com*
-// @match               *.bilibili.com/video/av*
-// @match               *.bilibili.com/bangumi/play*
+// @include             *bilibili.com/bangumi/play*
+// @include             /.+bilibili.com/video/(av|bv1).+/
 // @run-at              document-end
 // ==/UserScript==
 
@@ -49,24 +49,27 @@
         return false;
     };
 
+
     const redirectToAnalysisServer = function () {
         let analysisServer = `http://2333.com:${LOLILOLI_PORT}/?from=`;
-        if (/.+(ep|av)\d+.+/.test(location.href)) {
-            const p = new URLSearchParams(location.search).get('p');
-            analysisServer += location.href.split('?')[0] + (p ? '&p=' + p : '');
+        if (/.+ep\d+.+/.test(location.href)) {
+            analysisServer += location.href.split('?')[0];
         } else if (/.+ss\d+.+/.test(location.href)) {
             let id = __INITIAL_STATE__.epInfo.id
             if (__PGC_USERSTATE__.hasOwnProperty('progress')) {
                 id = __PGC_USERSTATE__.progress.last_ep_id;
             }
             analysisServer += 'https://www.bilibili.com/bangumi/play/ep' + id;
+        } else if (/.+(av\d+)|bv1\w+.+/i.test(location.href)) {
+            const p = new URLSearchParams(location.search).get('p');
+            analysisServer += 'https://www.bilibili.com/video/av' + __INITIAL_STATE__.aid + (p ? '&p=' + p : '');
         }
         window.open(analysisServer);
     };
 
     const waitElement = function (selector, callback, fail, interval, timeout) {
         interval = interval || 100;
-        timeout = timeout || 8000;
+        timeout = timeout || 20000;
         let flag = true;
         let elem = null;
         const waiterId = Date.now();
