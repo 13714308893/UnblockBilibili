@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name                哔哩哔哩解析辅助
 // @namespace           https://github.com/vcheckzen/UnblockBilibili/blob/master/loliloli.user.js
-// @version             0.0.6.4
+// @version             0.0.6.5
 // @icon                https://www.bilibili.com/favicon.ico
 // @description         为哔哩哔哩视频注入一键解析按钮
 // @author              https://github.com/vcheckzen
 // @supportURL          https://github.com/vcheckzen/UnblockBilibili/issues
 // @contributionURL     https://github.com/vcheckzen/UnblockBilibili
 // @include             *2333.com*
+// @include             *bilibili.com/video/bv1*
 // @include             *bilibili.com/bangumi/play*
-// @include             /.+bilibili.com/video/(av|bv1).+/
 // @run-at              document-end
 // ==/UserScript==
 
@@ -21,36 +21,25 @@
     if (location.host === `2333.com:${LOLILOLI_PORT}` && box) {
         const sp = new URLSearchParams(location.search);
         const from = sp.get('from'), p = sp.get('p');
-        if (from && /.+(av|ep)\d+/.test(from) && localStorage.getItem('token')) {
-            if (!localStorage.getItem('default_player')) {
-                localStorage.setItem('default_player', 'dplayer');
-                localStorage.setItem('PLAYER', 'dplayer');
-            }
+        if (from && /.+(BV1|ep)\w+/.test(from) && localStorage.getItem('token')) {
             box.originalUrl = from + (p ? '?p=' + p : '');
         }
         return;
     }
 
-    const elemWaitor = [];
     const rightLists = ['.r-con', '.plp-r'];
 
     const payVideo = function () {
-        if (typeof __PGC_USERSTATE__ !== 'undefined'
-            && __PGC_USERSTATE__.hasOwnProperty('dialog')
-            && __PGC_USERSTATE__.dialog.hasOwnProperty('btn_left')
-            && typeof __INITIAL_STATE__ !== 'undefined'
+        if (/.+(ep|ss)\d+.+/.test(location.href)
             && __INITIAL_STATE__.mediaInfo.payMent.vipDiscount !== 1) {
-            if (__INITIAL_STATE__.mediaInfo.payMent.price !== "0.0" ||
-                __INITIAL_STATE__.epInfo.badgeType !== 0
-            ) {
-                return true;
-            }
+            return true;
         }
         return false;
     };
 
 
     const redirectToAnalysisServer = function () {
+        const bilibiliHost = 'https://www.bilibili.com/'
         let analysisServer = `http://2333.com:${LOLILOLI_PORT}/?from=`;
         if (/.+ep\d+.+/.test(location.href)) {
             analysisServer += location.href.split('?')[0];
@@ -59,35 +48,34 @@
             if (__PGC_USERSTATE__.hasOwnProperty('progress')) {
                 id = __PGC_USERSTATE__.progress.last_ep_id;
             }
-            analysisServer += 'https://www.bilibili.com/bangumi/play/ep' + id;
-        } else if (/.+(av\d+)|bv1\w+.+/i.test(location.href)) {
+            analysisServer += bilibiliHost + 'bangumi/play/ep' + id;
+        } else if (/.+BV1\w+.+/.test(location.href)) {
             const p = new URLSearchParams(location.search).get('p');
-            analysisServer += 'https://www.bilibili.com/video/av' + __INITIAL_STATE__.aid + (p ? '&p=' + p : '');
+            analysisServer += bilibiliHost + 'video/' + __INITIAL_STATE__.videoData.bvid + (p ? '&p=' + p : '');
         }
         window.open(analysisServer);
     };
 
     const waitElement = function (selector, callback, fail, interval, timeout) {
-        interval = interval || 100;
-        timeout = timeout || 20000;
-        let flag = true;
-        let elem = null;
-        const waiterId = Date.now();
-        elemWaitor[waiterId] = setInterval(() => {
+        interval = interval || 500;
+        timeout = timeout || 10000;
+        let elem = null, iWaitor = null, tWaitor = null;
+        iWaitor = setInterval(() => {
             elem = document.querySelector(selector);
-            if (flag && elem) {
-                flag = false;
+            if (elem) {
+                clearInterval(iWaitor);
+                clearTimeout(tWaitor);
                 if (!payVideo()) {
                     callback(elem);
                 }
-                clearInterval(elemWaitor[waiterId]);
             }
         }, interval);
-        setTimeout(() => {
+        tWaitor = setTimeout(() => {
+            clearInterval(iWaitor);
+            clearTimeout(tWaitor);
             if (typeof fail === 'function') {
                 fail();
             }
-            clearInterval(elemWaitor[waiterId]);
         }, timeout);
     };
 
